@@ -35,12 +35,10 @@ void Composite::display(std::ostream& outs) const {
     Polyhedron::display(outs);
     outs << allPolyhedra.size() << " polyhedra";
     for (const auto& poly : allPolyhedra) {
-        outs << std::endl;
+        outs << std::endl << "  "; // Add indentation for polyhedra inside composite
         poly->display(outs);
     }
 }
-
-
 
 void Composite::scale(double scalingFactor) {
     for (auto& poly : allPolyhedra) {
