@@ -1,0 +1,78 @@
+MAINPROG=createPolyhedra
+CPPS= createPolyhedra.cpp Polyhedron.cpp Sphere.cpp Point.cpp \
+      PolyhedronFactory.cpp BoundingBox.cpp Cylinder.cpp Composite.cpp \
+      utilities.cpp
+TEST_CPPS= Polyhedron.cpp Sphere.cpp Point.cpp \
+      PolyhedronFactory.cpp BoundingBox.cpp Cylinder.cpp Composite.cpp \
+      utilities.cpp
+TEST_DRIVERS=TestCylinder.cpp TestComposite.cpp
+
+DIR=${PWD}
+ASST=$(notdir ${DIR})
+ifneq (,$(findstring MinGW,$(PATH)))
+DISTR=MinGW
+EXE=.exe
+LFLAGS=
+else
+DISTR=Unix
+EXE=
+LFLAGS=-fsanitize=leak,address -fuse-ld=gold
+endif
+#
+########################################################################
+# Macro definitions for "standard" C and C++ compilations
+#
+CPPFLAGS=-g -std=c++11 -D$(DISTR) -Wall -Wextra -Wpedantic -Weffc++
+CFLAGS=-g
+TARGET=$(MAINPROG)$(EXE)
+LINK=g++ $(CPPFLAGS)
+#
+CC=gcc
+CPP=g++
+#
+#
+#  In most cases, you should not change anything below this line.
+#
+#  The following is "boilerplate" to set up the standard compilation
+#  commands:
+#
+
+
+OBJS=$(CPPS:%.cpp=%.o)
+DEPENDENCIES = $(CPPS:%.cpp=%.d)
+
+TEST_OBJS=$(TEST_CPPS:%.cpp=%.o)
+TEST_DRIVER_OBJS=$(TEST_DRIVERS:%.cpp=%.o)
+
+%.d: %.cpp
+	touch $@
+
+%.o: %.cpp
+	$(CPP) $(CPPFLAGS) -MMD -o $@ -c $*.cpp
+
+#
+# Targets:
+#
+all: $(TARGET) tests
+
+
+win: $(OBJS)
+	$(LINK) $(FLAGS) -o $(TARGET) $(OBJS)
+
+$(TARGET): $(OBJS)
+	$(LINK) $(FLAGS) -o $(TARGET) $(OBJS) $(LFLAGS)
+
+tests: $(TEST_OBJS)  $(TEST_DRIVER_OBJS)
+	$(LINK) $(FLAGS) -o testCylinder $(TEST_OBJS) TestCylinder.o $(LFLAGS)
+	$(LINK) $(FLAGS) -o testComposite $(TEST_OBJS) TestComposite.o $(LFLAGS)
+
+
+clean:
+	-/bin/rm -f *.d *.o $(TARGET) $(TEST_DRIVER_OBJS) testCylinder.o TestComposite.o testCylinder testComposite
+
+
+
+make.dep: $(DEPENDENCIES)
+	-cat $(DEPENDENCIES) > $@
+
+include make.dep
